@@ -1,11 +1,13 @@
 name = Countries
 core = 7.x
 package = Microservice
+dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = ms_core
 dependencies[] = taxonomy
 dependencies[] = text
 features[features_api][] = api:2
+features[field_base][] = field_ms_countries
 features[field_base][] = field_ms_iso2
 features[field_instance][] = taxonomy_term-ms_country-field_ms_iso2
 features[field_instance][] = taxonomy_term-ms_country-name_field
