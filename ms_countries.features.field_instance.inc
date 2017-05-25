@@ -10,6 +10,47 @@
 function ms_countries_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'taxonomy_term-ms_country-field_ms_hrinfo_id'.
+  $field_instances['taxonomy_term-ms_country-field_ms_hrinfo_id'] = array(
+    'bundle' => 'ms_country',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 2,
+      ),
+    ),
+    'entity_type' => 'taxonomy_term',
+    'field_name' => 'field_ms_hrinfo_id',
+    'label' => 'Hrinfo ID',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 3,
+    ),
+  );
+
   // Exported field_instance: 'taxonomy_term-ms_country-field_ms_iso2'.
   $field_instances['taxonomy_term-ms_country-field_ms_iso2'] = array(
     'bundle' => 'ms_country',
@@ -84,6 +125,7 @@ function ms_countries_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Hrinfo ID');
   t('ISO2');
   t('Name');
 
