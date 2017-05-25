@@ -42,9 +42,14 @@ function ms_countries_fetch_and_sync() {
             'vocabulary_machine_name' => 'ms_country'
           );
         }
+        else {
+          $tid = reset($result['taxonomy_term']);
+          $term = taxonomy_term_load($tid->tid);
+        }
 
         $term->name = $item['label']['default'];
         $term->field_ms_iso2[LANGUAGE_NONE][0]['value'] = $item['iso2'];
+        $term->field_ms_hrinfo_id[LANGUAGE_NONE][0]['value'] = $item['hrinfo_id'];
 
         taxonomy_term_save($term);
       }
