@@ -49,7 +49,14 @@ function ms_countries_fetch_and_sync() {
 
         $term->name = $item['label']['default'];
         $term->field_ms_iso2[LANGUAGE_NONE][0]['value'] = $item['iso2'];
-        $term->field_ms_hrinfo_id[LANGUAGE_NONE][0]['value'] = $item['hrinfo_id'];
+        $op_url = 'https://www.humanitarianresponse.info/en/api/v1.0/operations?filter[country]='.$item['hrinfo_id'].'&filter[type]=country';
+        $op_request = drupal_http_request($op_url);
+        if (isset($op_request->data)) {
+          $op_data = drupal_json_decode($op_request->data);
+          if (!empty($op_data['data'])) {
+            $term->field_ms_hrinfo_id[LANGUAGE_NONE][0]['value'] = $op_data['data'][0]['id'];
+          }
+        }
 
         taxonomy_term_save($term);
       }
