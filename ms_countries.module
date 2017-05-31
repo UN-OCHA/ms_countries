@@ -4,12 +4,6 @@
  * Code for the Countries feature.
  */
 
-include_once 'ms_countries.features.inc';
-/**
- * @file
- * ms_country.module file
- */
-
 /**
  * Implements hook_cron()
  * Synchronizes and fetches countries from vocabulary.unocha.org on cron
