@@ -1,6 +1,12 @@
 <?php
 /**
  * @file
+ * Code for the Countries feature.
+ */
+
+include_once 'ms_countries.features.inc';
+/**
+ * @file
  * ms_country.module file
  */
 
