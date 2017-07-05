@@ -10,7 +10,12 @@
  * Fetches countries from vocabulary.unocha.org on cron.
  */
 function ms_countries_cron() {
-  ms_countries_fetch_and_sync();
+  $last_pull = variable_get('ms_countries_last_pull', 0);
+  $now = time();
+  if ($now - $last_pull > 24 * 3600) {
+    ms_countries_fetch_and_sync();
+    variable_set('ms_countries_last_pull', $now);
+  }
 }
 
 /**
