@@ -19,54 +19,103 @@ function ms_countries_cron() {
 }
 
 /**
+ * Sanitize label.
+ */
+function ms_countries_sanitize_label($label) {
+  $out = preg_replace("/\([^)]+\)/","",$label);
+  $out = preg_replace("/\[[^)]+\]/","",$out);
+  $out = trim($out);
+  return $out;
+}
+
+/**
  * Fetch and sync countries from vocabulary.unocha.org.
  */
 function ms_countries_fetch_and_sync() {
   $url = 'http://vocabulary.unocha.org/json/beta-v1/countries.json';
 
-  $request = drupal_http_request($url);
-  if (isset($request->data)) {
-    $data = drupal_json_decode($request->data);
-    if (empty($data['data'])) {
-      return;
-    }
+  $languages = array(
+    'en',
+    'fr',
+    'es',
+  );
+  $installed_languages = array_keys(language_list());
 
-    foreach ($data['data'] as $item) {
-      if (isset($item['label']) && $item['label'] && isset($item['iso2']) && $item['iso2']) {
-        $query = new EntityFieldQuery();
-        $query->entityCondition('entity_type', 'taxonomy_term');
-        $query->entityCondition('bundle', 'ms_country', '=');
-        $query->fieldCondition('field_ms_iso2', 'value', $item['iso2'], '=');
-        $result = $query->execute();
+  $named_languages = array(
+    'fr' => 'french-short',
+    'es' => 'spanish-short'
+  );
 
-        $term = new stdClass();
-        if (!isset($result['taxonomy_term'])) {
-          $vocabularies = taxonomy_vocabulary_get_names();
-          $term = (object) array(
-            'vid' => $vocabularies['ms_country']->vid,
-            'name' => $item['label']['default'],
-            'vocabulary_machine_name' => 'ms_country',
-          );
-        }
-        else {
-          $tid = reset($result['taxonomy_term']);
-          $term = taxonomy_term_load($tid->tid);
-        }
+  foreach ($languages as $language) {
+    if (in_array($language, $installed_languages)) {
 
-        $term->name = $item['label']['default'];
-        $term->field_ms_iso2[LANGUAGE_NONE][0]['value'] = $item['iso2'];
-        $op_url = 'https://www.humanitarianresponse.info/en/api/v1.0/operations?filter[country]=' . $item['hrinfo_id'] . '&filter[type]=country';
-        $op_request = drupal_http_request($op_url);
-        if (isset($op_request->data)) {
-          $op_data = drupal_json_decode($op_request->data);
-          if (!empty($op_data['data'])) {
-            $term->field_ms_hrinfo_id[LANGUAGE_NONE][0]['value'] = $op_data['data'][0]['id'];
+      while (TRUE) {
+        $request = drupal_http_request($url);
+        if (isset($request->data)) {
+          $data = drupal_json_decode($request->data);
+          if (empty($data['data'])) {
+            return;
+          }
+
+          foreach ($data['data'] as $item) {
+            if (isset($item['label']) && $item['label'] && isset($item['iso2']) && $item['iso2']) {
+              $label = $item['label']['default'];
+              $query = new EntityFieldQuery();
+              $query->entityCondition('entity_type', 'taxonomy_term');
+              $query->entityCondition('bundle', 'ms_country', '=');
+              $query->fieldCondition('field_ms_iso2', 'value', $item['iso2'], '=');
+              $result = $query->execute();
+
+              $term = new stdClass();
+              if (!isset($result['taxonomy_term'])) {
+                $vocabularies = taxonomy_vocabulary_get_names();
+                $term = (object) array(
+                  'vid' => $vocabularies['ms_country']->vid,
+                  'name' => $label,
+                  'vocabulary_machine_name' => 'ms_country',
+                );
+              }
+              else {
+                $tid = array_pop($result['taxonomy_term']);
+                $term = taxonomy_term_load($tid->tid);
+                if ($language != 'en' && !isset($term->translations->data[$language])) {
+                  $translation = array(
+                    'translate' => 0,
+                    'status' => 1,
+                    'language' => $language,
+                    'source' => 'en',
+                  );
+                  $handler = entity_translation_get_handler('taxonomy_term', $term);
+                  $handler->setTranslation($translation);
+                }
+              }
+
+              if ($language == 'en') {
+                $term->name = $label;
+              }
+              $named_language = $named_languages[$language];
+              $term->name_field[$language][0]['value'] = ms_countries_sanitize_label($item['label'][$named_language]);
+              $term->field_ms_iso2[LANGUAGE_NONE][0]['value'] = $item['iso2'];
+              $op_url = 'https://www.humanitarianresponse.info/en/api/v1.0/operations?filter[country]=' . $item['hrinfo_id'] . '&filter[type]=country';
+              $op_request = drupal_http_request($op_url);
+              if (isset($op_request->data)) {
+                $op_data = drupal_json_decode($op_request->data);
+                if (!empty($op_data['data'])) {
+                  $term->field_ms_hrinfo_id[LANGUAGE_NONE][0]['value'] = $op_data['data'][0]['id'];
+                }
+              }
+
+              taxonomy_term_save($term);
+            }
+          }
+          if (isset($data['next']) && isset($data['next']['href'])) {
+            $url = $data['next']['href'];
+          }
+          else {
+            break;
           }
         }
-
-        taxonomy_term_save($term);
       }
-
     }
   }
 }
