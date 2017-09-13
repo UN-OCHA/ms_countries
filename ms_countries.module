@@ -22,8 +22,8 @@ function ms_countries_cron() {
  * Sanitize label.
  */
 function ms_countries_sanitize_label($label) {
-  $out = preg_replace("/\([^)]+\)/","",$label);
-  $out = preg_replace("/\[[^)]+\]/","",$out);
+  $out = preg_replace("/\([^)]+\)/", "", $label);
+  $out = preg_replace("/\[[^)]+\]/", "", $out);
   $out = trim($out);
   return $out;
 }
@@ -43,7 +43,7 @@ function ms_countries_fetch_and_sync() {
 
   $named_languages = array(
     'fr' => 'french-short',
-    'es' => 'spanish-short'
+    'es' => 'spanish-short',
   );
 
   foreach ($languages as $language) {
